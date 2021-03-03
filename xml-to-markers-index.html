@@ -1,0 +1,122 @@
+<!DOCTYPE html >
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>Using MySQL and PHP with Google Maps</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+
+<html>
+  <body>
+    <div id="map"></div>
+    <input id="submit" type="button" value="Geocode">
+    <script>
+      var customLabel = {
+        restaurant: {
+          label: 'R'
+        },
+        bar: {
+          label: 'B'
+        }
+      };
+
+        function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: new google.maps.LatLng(37.7437648, -121.1325892),
+          zoom: 8
+        });
+        var geocoder = new google.maps.Geocoder();
+        var infoWindow = new google.maps.InfoWindow;
+          // Change this depending on the name of your PHP or XML file
+           downloadUrl('https://00e9e64bace7ffd37793baa14abd083fb16be3fd13c07bf43a-apidata.googleusercontent.com/download/storage/v1/b/dtdispatchfiles/o/mapmarkers.xml?qk=AD5uMEufD0b1zut3QfUP1328JIld5s6o3BP_Whbwsqwi9NbR5okjWS5Hpzi9TUW2L7m7yjdx6WDsfpx2LKyKkIGJtetn48Nn7HLdpEISWnYVvnk3m6-CrujZU0S5FXnH9SqoUPfpReMUtaeRTze9peStHR7nchDyOwno4jFdBwrh6O1gFBD3m37lwp8IwtEiObLXFnJONB0eAgnruEao7Dxl3MT0XJz8q7qU4uFcJgovbc3mV-clqdebp6aqGArNUn2i5B3YLbizNOebmTFQ38ME801WYD1SJBe5TEKWGCHnlRjhOI7zLnwXuHdGX1SK8wDHVSqpcF6upR55kATL7LdSHeDI8kHze4d3wzUzeBtU0JzHix4B3OgNshnqq_IolOwxpCRsc2Uu8ZsRBmzdXcK6RJ_Gz88vFW3rukJEF0kHC8AIN3Py2yWElGAuCTCegwEZUG1Q-fYZlbX0vjUMLpcpFCwOzEjqSFUO7tMmdqPI4p7CExEIC2aj1LPVV66DmyaBQ8B4LbSr_Lt-pfXlpUloMwyVKzJn2teYHgBngVFn_O57jwvmd2ynDtbvqnrvUuAE_0jP1JzzvqR6eHkiTnO3HsyMU5Hvy4fSNfHRu5lDwPSZhPGenHulJKAiIJhL4a9p_fHWyXMRGcHFIpG0q1WR-dgJ7C_zqdxFBU3he6YBaJ0XCV4aNu3TMLxaEHTxnbv4VPDnVz1scunUeCIPmka5Ro__qe-DO6g9aEcUMxqVRre_J5Skom2wSE0Z8E83gHw7dLdIognU', function(data) {
+
+            var xml = data.responseXML;
+            var markers = xml.documentElement.getElementsByTagName('marker');
+            Array.prototype.forEach.call(markers, function(markerElem) {
+              var id = markerElem.getAttribute('id');
+              var name = markerElem.getAttribute('name');
+              var address = markerElem.getAttribute('address');
+
+              
+
+              var type = markerElem.getAttribute('type');
+              var point = geocoder.geocode({'address': address}, function(results, status) {
+		          if (status === 'OK') {
+		            //resultsMap.setCenter(results[0].geometry.location);
+		            //var marker = new google.maps.Marker({
+		              //map: resultsMap,
+		              //position: results[0].geometry.location
+		            //});
+		            alert('Geocode was successful: ' + status);
+		          } else {
+		            alert('Geocode was not successful for the following reason: ' + status);
+		          }
+		        });
+
+
+              //new google.maps.LatLng(
+                  //parseFloat(markerElem.getAttribute('lat')),
+                  //parseFloat(markerElem.getAttribute('lng')));
+
+              var infowincontent = document.createElement('div');
+              var strong = document.createElement('strong');
+              strong.textContent = name
+              infowincontent.appendChild(strong);
+              infowincontent.appendChild(document.createElement('br'));
+
+              var text = document.createElement('text');
+              text.textContent = address
+              infowincontent.appendChild(text);
+              var icon = customLabel[type] || {};
+              var marker = new google.maps.Marker({
+                map: map,
+                position: point,
+                label: icon.label
+              });
+              marker.addListener('click', function() {
+                infoWindow.setContent(infowincontent);
+                infoWindow.open(map, marker);
+              });
+            });
+          });
+        }
+
+
+
+      function downloadUrl(url, callback) {
+
+        var request = window.ActiveXObject ?
+            new ActiveXObject('Microsoft.XMLHTTP') :
+            new XMLHttpRequest;
+
+        request.onreadystatechange = function() {
+          if (request.readyState == 4) {
+            request.onreadystatechange = doNothing;
+            callback(request, request.status);
+          }
+        };
+
+        request.open('GET', url, true);
+        request.send(null);
+      }
+
+      function doNothing() {}
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDbeFfal845IT5ZrsUgox-6oNe4GHM_jsk&callback=initMap"
+    async defer>
+      
+    </script>
+  </body>
+</html>
